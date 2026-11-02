@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+_pycache_/
+*.pyc
+*.log
