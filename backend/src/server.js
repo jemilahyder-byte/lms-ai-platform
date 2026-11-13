@@ -662,97 +662,147 @@ app.get(
       });
     }
   }
-);
+)
 app.get(
-  "/api/instructor/courses/:courseId/modules",
+  "/api/student/courses/:courseId/lessons",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("student"),
   async (req, res) => {
     const parsed = z.string().uuid().safeParse(req.params.courseId);
 
     if (!parsed.success) {
-      return res.status(400).json({ message: "Invalid course ID." });
+      return res.status(400).json({
+        message: "Invalid course ID.",
+      });
     }
 
     try {
-      const course = await pool.query(
-        `SELECT id FROM courses
-         WHERE id = $1 AND instructor_id = $2`,
+      const access = await pool.query(
+        "SELECT c.id, c.title " +
+          "FROM courses c " +
+          "JOIN enrollments e ON e.course_id = c.id " +
+          "WHERE c.id = $1 " +
+          "AND e.user_id = $2 " +
+          "AND c.status = 'approved'",
         [parsed.data, req.user.id]
       );
 
-      if (course.rows.length === 0) {
-        return res.status(404).json({ message: "Course not found." });
+      if (access.rows.length === 0) {
+        return res.status(403).json({
+          message: "Enroll in this approved course to view lessons.",
+        });
       }
 
-      const { rows } = await pool.query(
-        `SELECT id, course_id, title, order_index
-         FROM modules
-         WHERE course_id = $1
-         ORDER BY order_index, id`,
-        [parsed.data]
+      const result = await pool.query(
+        "SELECT " +
+          "l.id, " +
+          "l.title, " +
+          "l.video_url, " +
+          "l.transcript, " +
+          "l.duration_seconds, " +
+          "l.order_index, " +
+          "m.id AS module_id, " +
+          "m.title AS module_title, " +
+          "m.order_index AS module_order, " +
+          "COALESCE(p.last_position_seconds, 0) AS last_position_seconds, " +
+          "COALESCE(p.is_completed, false) AS is_completed " +
+          "FROM modules m " +
+          "JOIN lectures l ON l.module_id = m.id " +
+          "LEFT JOIN lecture_progress p " +
+          "ON p.lecture_id = l.id AND p.user_id = $2 " +
+          "WHERE m.course_id = $1 " +
+          "ORDER BY m.order_index, m.id, l.order_index, l.id",
+        [parsed.data, req.user.id]
       );
 
-      return res.json({ modules: rows });
+      return res.json({
+        course: access.rows[0],
+        lessons: result.rows,
+      });
     } catch (error) {
-      console.error("Modules failed:", error.code || error);
+      console.error("Student lessons failed:", error.code || error);
+
       return res.status(500).json({
-        message: "Could not load modules."
+        message: "Could not load lessons.",
       });
     }
   }
 );
+
+
+
+
 app.post(
-  "/api/courses/:courseId/rating",
+  "/api/student/lessons/:lessonId/progress",
   requireAuth,
   requireRole("student"),
   async (req, res) => {
-    const courseId = z.string().uuid().safeParse(req.params.courseId);
+    const lessonId = z.string().uuid().safeParse(req.params.lessonId);
+
     const body = z.object({
-      rating: z.number().int().min(1).max(5)
+      positionSeconds: z.number().int().min(0).max(86400),
+      isCompleted: z.boolean().default(false),
     }).safeParse(req.body);
 
-    if (!courseId.success || !body.success) {
+    if (!lessonId.success || !body.success) {
       return res.status(400).json({
-        message: "Choose a rating from 1 to 5."
+        message: "Invalid lesson ID or progress.",
       });
     }
 
     try {
-      const { rows } = await pool.query(
-        `INSERT INTO course_ratings (user_id, course_id, rating)
-         SELECT $1, c.id, $3
-         FROM courses c
-         JOIN enrollments e ON e.course_id = c.id
-         WHERE c.id = $2
-           AND e.user_id = $1
-           AND c.status = 'approved'
-           AND c.instructor_id <> $1
-         ON CONFLICT (user_id, course_id)
-         DO UPDATE SET rating = EXCLUDED.rating,
-                       updated_at = NOW()
-         RETURNING course_id, rating`,
-        [req.user.id, courseId.data, body.data.rating]
+      const result = await pool.query(
+        "INSERT INTO lecture_progress " +
+          "(user_id, lecture_id, last_position_seconds, " +
+          "is_completed, completed_at, updated_at) " +
+          "SELECT $1, l.id, $3, $4, " +
+          "CASE WHEN $4 THEN NOW() ELSE NULL END, NOW() " +
+          "FROM lectures l " +
+          "JOIN modules m ON m.id = l.module_id " +
+          "JOIN courses c ON c.id = m.course_id " +
+          "JOIN enrollments e ON e.course_id = c.id " +
+          "WHERE l.id = $2 AND e.user_id = $1 " +
+          "AND c.status = 'approved' " +
+          "ON CONFLICT (user_id, lecture_id) DO UPDATE SET " +
+          "last_position_seconds = EXCLUDED.last_position_seconds, " +
+          "is_completed = lecture_progress.is_completed " +
+          "OR EXCLUDED.is_completed, " +
+          "completed_at = CASE " +
+          "WHEN lecture_progress.is_completed " +
+          "THEN lecture_progress.completed_at " +
+          "WHEN EXCLUDED.is_completed THEN NOW() " +
+          "ELSE NULL END, " +
+          "updated_at = NOW() " +
+          "RETURNING lecture_id, last_position_seconds, " +
+          "is_completed, completed_at, updated_at",
+        [
+          req.user.id,
+          lessonId.data,
+          body.data.positionSeconds,
+          body.data.isCompleted,
+        ]
       );
 
-      if (rows.length === 0) {
+      if (result.rows.length === 0) {
         return res.status(403).json({
-          message: "Enroll in this course before rating it. Instructors cannot rate their own courses."
+          message: "Lesson unavailable or you are not enrolled.",
         });
       }
 
       return res.json({
-        message: "Rating saved.",
-        rating: rows[0]
+        message: "Progress saved.",
+        progress: result.rows[0],
       });
     } catch (error) {
-      console.error("Rating failed:", error.code || error);
+      console.error("Progress save failed:", error.code || error);
+
       return res.status(500).json({
-        message: "Could not save rating."
+        message: "Could not save progress.",
       });
     }
   }
 );
+
 const server = app.listen(port, "127.0.0.1", () => {
   console.log("LMS API running at http://127.0.0.1:" + port);
 });

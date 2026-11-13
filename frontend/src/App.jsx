@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import InstructorDashboard from "./InstructorDashboard";
 import AdminDashboard from "./AdminDashboard";
-
+import { StudentLearning } from "./StudentCoursePlayer";
 const tokenKey = "lms-token";
 
 const selectStyle = {
@@ -476,11 +476,15 @@ export default function App() {
             Roles — <strong>{user.roles.join(", ")}</strong>
           </p>
 
-          <CourseCatalog
-            key={user.id || user.email}
-            token={sessionStorage.getItem(tokenKey)}
-            canEnroll={user.roles.includes("student")}
-          />
+        {user.roles.includes("student") && (
+  <StudentLearning token={sessionStorage.getItem(tokenKey)} />
+)}
+
+<CourseCatalog
+  key={user.id || user.email}
+  token={sessionStorage.getItem(tokenKey)}
+  canEnroll={user.roles.includes("student")}
+/>
 
           {user.roles.includes("instructor") && (
             <InstructorDashboard
