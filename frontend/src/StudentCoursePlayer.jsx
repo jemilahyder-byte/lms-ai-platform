@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-
+import LessonNotes from "./LessonNotes";
+import LessonBookmarks from "./LessonBookmarks";
 async function request(path, token, body, signal) {
   const response = await fetch("/api/student" + path, {
     method: body ? "POST" : "GET",
@@ -138,11 +139,20 @@ function LessonVideo({ lesson, token }) {
       {error && <p role="alert">{error}</p>}
 
       {lesson.transcript && (
-        <details>
-          <summary>Transcript</summary>
-          <p style={{ whiteSpace: "pre-wrap" }}>{lesson.transcript}</p>
-        </details>
-      )}
+  <details>
+    <summary>Transcript</summary>
+    <p style={{ whiteSpace: "pre-wrap" }}>
+      {lesson.transcript}
+    </p>
+  </details>
+)}
+
+<LessonBookmarks
+  key={lesson.id}
+  lessonId={lesson.id}
+  token={token}
+  videoRef={videoRef}
+/>
     </article>
   );
 }
@@ -214,12 +224,19 @@ export default function StudentCoursePlayer({ courseId, token }) {
           </label>
 
           {selectedLesson && (
-            <LessonVideo
-              key={selectedLesson.id}
-              lesson={selectedLesson}
-              token={token}
-            />
-          )}
+  <>
+    <LessonVideo
+      key={selectedLesson.id}
+      lesson={selectedLesson}
+      token={token}
+    />
+    <LessonNotes
+      key={selectedLesson.id}
+      lessonId={selectedLesson.id}
+      token={token}
+    />
+  </>
+)}
         </>
       )}
     </section>
