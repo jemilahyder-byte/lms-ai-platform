@@ -28,7 +28,8 @@ async function request(path, token, body, signal) {
   return data;
 }
 
-function LessonVideo({ lesson, token }) {
+
+function LessonVideo({ lesson, token, onProgressSaved }) {
   const videoRef = useRef(null);
   const lastSaveRef = useRef(0);
   const queueRef = useRef(Promise.resolve());
@@ -58,6 +59,7 @@ function LessonVideo({ lesson, token }) {
         );
 
         setCompleted(data.progress.is_completed);
+        onProgressSaved?.(lesson.id, data.progress);
         setStatus("Progress saved.");
         setError("");
       })
@@ -188,7 +190,32 @@ export default function StudentCoursePlayer({ courseId, token }) {
     loadLessons();
     return () => controller.abort();
   }, [courseId, token]);
+  function handleProgressSaved(lessonId, progress) {
+  setData((previous) => {
+    if (!previous) return previous;
 
+    return {
+      ...previous,
+      lessons: previous.lessons.map((item) =>
+        item.id === lessonId
+          ? {
+              ...item,
+              last_position_seconds: progress.last_position_seconds,
+              is_completed: progress.is_completed,
+            }
+          : item
+      ),
+    };
+  });
+}
+const totalLessons = data?.lessons?.length || 0;
+const completedLessons =
+  data?.lessons?.filter((lesson) => lesson.is_completed).length || 0;
+
+const completionPercentage =
+  totalLessons === 0
+    ? 0
+    : Math.floor((completedLessons / totalLessons) * 100);
   if (error) {
     return <p role="alert">{error}</p>;
   }
@@ -204,7 +231,18 @@ export default function StudentCoursePlayer({ courseId, token }) {
   return (
     <section>
       <h3>{data.course.title} — Lessons</h3>
+<p role="status">
+  Course completion: {completionPercentage}%
+  {" — "}
+  {completedLessons} of {totalLessons} lessons completed
+</p>
 
+<progress
+  value={completedLessons}
+  max={totalLessons || 1}
+  aria-label="Course completion"
+  style={{ width: "100%" }}
+/>
       {data.lessons.length === 0 ? (
         <p>No lessons available yet.</p>
       ) : (
@@ -226,10 +264,11 @@ export default function StudentCoursePlayer({ courseId, token }) {
           {selectedLesson && (
   <>
     <LessonVideo
-      key={selectedLesson.id}
-      lesson={selectedLesson}
-      token={token}
-    />
+  key={selectedLesson.id}
+  lesson={selectedLesson}
+  token={token}
+  onProgressSaved={handleProgressSaved}
+/>
     <LessonNotes
       key={selectedLesson.id}
       lessonId={selectedLesson.id}
