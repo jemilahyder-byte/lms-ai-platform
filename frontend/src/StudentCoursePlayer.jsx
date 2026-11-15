@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import LessonNotes from "./LessonNotes";
 import LessonBookmarks from "./LessonBookmarks";
+import StudentAssignments from "./StudentAssignments";
+import StudentQuizzes from "./StudentQuizzes";
 async function request(path, token, body, signal) {
   const response = await fetch("/api/student" + path, {
     method: body ? "POST" : "GET",
@@ -344,6 +346,20 @@ export function StudentLearning({ token }) {
 
       {courseId && (
         <StudentCoursePlayer
+          key={courseId}
+          courseId={courseId}
+          token={token}
+        />
+      )}
+      {courseId && (
+        <StudentAssignments
+          key={courseId}
+          courseId={courseId}
+          token={token}
+        />
+      )}
+      {courseId && (
+        <StudentQuizzes
           key={courseId}
           courseId={courseId}
           token={token}

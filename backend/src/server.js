@@ -804,7 +804,28 @@ app.post(
 );
 require("./lessonNotes")(app, pool, z, requireAuth, requireRole);
 require("./lessonBookmarks")(app, pool, z, requireAuth, requireRole);
-
+require("./assignments")(app, pool, z, requireAuth, requireRole);
+require("./assignmentSubmissions")(
+  app,
+  pool,
+  z,
+  requireAuth,
+  requireRole
+);
+require("./assignmentGrading")(
+  app,
+  pool,
+  z,
+  requireAuth,
+  requireRole
+);
+require("./quizzes")(
+  app,
+  pool,
+  z,
+  requireAuth,
+  requireRole
+);
 const server = app.listen(port, "127.0.0.1", () => {
   console.log("LMS API running at http://127.0.0.1:" + port);
 });

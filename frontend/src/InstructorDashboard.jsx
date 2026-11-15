@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-
+import InstructorAssignments from "./InstructorAssignments";
+import InstructorSubmissions from "./InstructorSubmissions";
+import InstructorQuizzes from "./InstructorQuizzes";
 async function request(path, token, body, signal) {
   const response = await fetch("/api/instructor" + path, {
     method: body ? "POST" : "GET",
@@ -442,6 +444,27 @@ export default function InstructorDashboard({ token }) {
         <CourseEditor
           key={selectedCourse.id}
           course={selectedCourse}
+          token={token}
+        />
+      )}
+      {selectedCourse && (
+        <InstructorAssignments
+          key={selectedCourse.id}
+          courseId={selectedCourse.id}
+          token={token}
+        />
+      )}
+      {selectedCourse && (
+        <InstructorSubmissions
+          key={selectedCourse.id}
+          courseId={selectedCourse.id}
+          token={token}
+        />
+      )}
+      {selectedCourse && (
+        <InstructorQuizzes
+          key={selectedCourse.id}
+          courseId={selectedCourse.id}
           token={token}
         />
       )}

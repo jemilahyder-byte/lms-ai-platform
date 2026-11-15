@@ -9,3 +9,6 @@ venv/
 _pycache_/
 *.pyc
 *.log
+
+/backend/uploads/
+/frontend/src/variables-practice.js
