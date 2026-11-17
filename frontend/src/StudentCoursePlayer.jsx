@@ -3,6 +3,8 @@ import LessonNotes from "./LessonNotes";
 import LessonBookmarks from "./LessonBookmarks";
 import StudentAssignments from "./StudentAssignments";
 import StudentQuizzes from "./StudentQuizzes";
+import StudentCertificate from "./StudentCertificate";
+import StudentRewards from "./StudentRewards";
 async function request(path, token, body, signal) {
   const response = await fetch("/api/student" + path, {
     method: body ? "POST" : "GET",
@@ -365,6 +367,14 @@ export function StudentLearning({ token }) {
           token={token}
         />
       )}
+      {courseId && (
+        <StudentCertificate
+          key={courseId}
+          courseId={courseId}
+          token={token}
+        />
+      )}
+      <StudentRewards token={token} />
     </section>
   );
 }

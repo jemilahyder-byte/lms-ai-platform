@@ -826,6 +826,19 @@ require("./quizzes")(
   requireAuth,
   requireRole
 );
+require("./certificates")(
+  app,
+  pool,
+  z,
+  requireAuth,
+  requireRole
+);
+require("./learningRewards")(
+  app,
+  pool,
+  requireAuth,
+  requireRole
+);
 const server = app.listen(port, "127.0.0.1", () => {
   console.log("LMS API running at http://127.0.0.1:" + port);
 });
