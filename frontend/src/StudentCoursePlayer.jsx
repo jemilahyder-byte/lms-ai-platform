@@ -5,6 +5,7 @@ import StudentAssignments from "./StudentAssignments";
 import StudentQuizzes from "./StudentQuizzes";
 import StudentCertificate from "./StudentCertificate";
 import StudentRewards from "./StudentRewards";
+import StudentTutor from "./StudentTutor";
 async function request(path, token, body, signal) {
   const response = await fetch("/api/student" + path, {
     method: body ? "POST" : "GET",
@@ -374,6 +375,13 @@ export function StudentLearning({ token }) {
           token={token}
         />
       )}
+      {courseId && (
+  <StudentTutor
+    key={courseId}
+    courseId={courseId}
+    token={token}
+  />
+)}
       <StudentRewards token={token} />
     </section>
   );
