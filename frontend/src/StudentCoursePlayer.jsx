@@ -6,6 +6,8 @@ import StudentQuizzes from "./StudentQuizzes";
 import StudentCertificate from "./StudentCertificate";
 import StudentRewards from "./StudentRewards";
 import StudentTutor from "./StudentTutor";
+import LessonStudy from "./LessonStudy";
+import StudentStudyPlan from "./StudentStudyPlan";
 async function request(path, token, body, signal) {
   const response = await fetch("/api/student" + path, {
     method: body ? "POST" : "GET",
@@ -279,6 +281,11 @@ const completionPercentage =
       lessonId={selectedLesson.id}
       token={token}
     />
+    <LessonStudy
+  key={selectedLesson.id}
+  lessonId={selectedLesson.id}
+  token={token}
+/>
   </>
 )}
         </>
@@ -377,6 +384,13 @@ export function StudentLearning({ token }) {
       )}
       {courseId && (
   <StudentTutor
+    key={courseId}
+    courseId={courseId}
+    token={token}
+  />
+)}
+{courseId && (
+  <StudentStudyPlan
     key={courseId}
     courseId={courseId}
     token={token}

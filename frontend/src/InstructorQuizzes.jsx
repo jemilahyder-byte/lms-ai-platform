@@ -31,7 +31,8 @@ export default function InstructorQuizzes({ courseId, token }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-
+const [aiModuleId, setAiModuleId] = useState("");
+const [generating, setGenerating] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
 
@@ -92,7 +93,58 @@ export default function InstructorQuizzes({ courseId, token }) {
     setMessage("");
     form.reset();
   }
+async function generateAiQuiz() {
+  if (generating || saving) return;
 
+  setError("");
+  setMessage("");
+
+  if (!aiModuleId) {
+    setError("Choose a module first.");
+    return;
+  }
+
+  if (questions.length > 0) {
+    setError("Save or remove the current questions first.");
+    return;
+  }
+
+  setGenerating(true);
+
+  try {
+    const response = await fetch(
+      "/api/instructor/modules/" + aiModuleId + "/quiz-draft",
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+        signal: AbortSignal.timeout(45000),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Quiz generation failed.");
+    }
+
+    if (!Array.isArray(data.questions) || !data.questions.length) {
+      throw new Error("No questions returned. Try again.");
+    }
+
+    setQuestions(data.questions);
+    setMessage("AI draft ready. Review every question before saving.");
+  } catch (error) {
+    setError(
+      error.name === "TimeoutError"
+        ? "Generation timed out. Try again."
+        : error.message
+    );
+  } finally {
+    setGenerating(false);
+  }
+}
   async function createQuiz(event) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -148,6 +200,37 @@ export default function InstructorQuizzes({ courseId, token }) {
 
       {!loading && modules.length > 0 && (
         <>
+        <div>
+  <h4>Generate an AI quiz draft</h4>
+
+  <label>
+    Module
+    <select
+      value={aiModuleId}
+      onChange={(event) => setAiModuleId(event.target.value)}
+      disabled={generating || saving || questions.length > 0}
+    >
+      <option value="">Choose a module</option>
+      {modules.map((module) => (
+        <option key={module.id} value={module.id}>
+          {module.title}
+        </option>
+      ))}
+    </select>
+  </label>
+
+  <button
+    type="button"
+    onClick={generateAiQuiz}
+    disabled={
+      generating || saving || !aiModuleId || questions.length > 0
+    }
+  >
+    {generating ? "Generating..." : "Generate AI quiz"}
+  </button>
+
+  <p>Review the generated questions before saving the quiz.</p>
+</div>
           <h4>1. Add questions</h4>
           <form onSubmit={addQuestion}>
             <fieldset disabled={saving}>
@@ -207,10 +290,21 @@ export default function InstructorQuizzes({ courseId, token }) {
 
           <h4>2. Save quiz</h4>
           <form onSubmit={createQuiz}>
+            <input
+  type="hidden"
+  name="moduleId"
+  value={aiModuleId || modules[0]?.id || ""}
+/>
             <fieldset disabled={saving}>
               <label>
                 Module
-                <select name="moduleId" required>
+                <select
+  name="moduleId"
+  required
+  value={aiModuleId || modules[0]?.id || ""}
+  onChange={(event) => setAiModuleId(event.target.value)}
+  disabled={generating || questions.length > 0}
+>
                   {modules.map((item) => (
                     <option key={item.id} value={item.id}>{item.title}</option>
                   ))}
