@@ -853,6 +853,12 @@ require("./lessonStudy")(
 );
 require("./aiQuiz")(app, pool, requireAuth, requireRole);
 require("./studyPlan")(app, pool, requireAuth, requireRole);
+require("./instructorAnalytics")(app, pool, requireAuth, requireRole);
+require("./adminOverview")(app, pool, requireAuth, requireRole);
+require("./adminUsers")(app, pool, requireAuth, requireRole);
+require("./adminUserDeletion")(app, pool, requireAuth, requireRole);
+require("./discussionModeration")(app, pool, requireAuth, requireRole);
+require("./courseDiscussions")(app, pool, requireAuth);
 const server = app.listen(port, "127.0.0.1", () => {
   console.log("LMS API running at http://127.0.0.1:" + port);
 });

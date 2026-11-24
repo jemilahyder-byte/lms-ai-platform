@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-
+import AdminOverview from "./AdminOverview";
+import AdminUsers from "./AdminUsers";
+import AdminModeration from "./AdminModeration";
 export default function AdminDashboard({ token }) {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +76,9 @@ export default function AdminDashboard({ token }) {
   return (
     <section>
       <h3>Admin dashboard</h3>
+      <AdminOverview token={token}/>
+      <AdminUsers token={token}/>
+      <AdminModeration token={token} />
       <h4>Courses awaiting approval</h4>
 
       {error && <p role="alert">{error}</p>}
@@ -94,6 +99,7 @@ export default function AdminDashboard({ token }) {
               borderRadius: 10,
             }}
           >
+
             <h4>{course.title}</h4>
             <p>{course.description}</p>
             <p>Instructor: {course.instructor_name}</p>

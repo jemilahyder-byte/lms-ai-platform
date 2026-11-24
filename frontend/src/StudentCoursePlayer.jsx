@@ -8,6 +8,7 @@ import StudentRewards from "./StudentRewards";
 import StudentTutor from "./StudentTutor";
 import LessonStudy from "./LessonStudy";
 import StudentStudyPlan from "./StudentStudyPlan";
+import CourseDiscussions from "./CourseDiscussions";
 async function request(path, token, body, signal) {
   const response = await fetch("/api/student" + path, {
     method: body ? "POST" : "GET",
@@ -98,6 +99,7 @@ function LessonVideo({ lesson, token, onProgressSaved }) {
 
   return (
     <article>
+
       <h4>{lesson.title}</h4>
       <p>{completed ? "Completed" : "In progress"}</p>
 
@@ -385,6 +387,13 @@ export function StudentLearning({ token }) {
       {courseId && (
   <StudentTutor
     key={courseId}
+    courseId={courseId}
+    token={token}
+  />
+)}
+{courseId && (
+  <CourseDiscussions
+    key={courseId + ":" + token}
     courseId={courseId}
     token={token}
   />

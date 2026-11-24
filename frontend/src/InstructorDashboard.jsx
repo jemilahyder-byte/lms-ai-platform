@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import InstructorAssignments from "./InstructorAssignments";
 import InstructorSubmissions from "./InstructorSubmissions";
 import InstructorQuizzes from "./InstructorQuizzes";
+import InstructorAnalytics from "./InstructorAnalytics";
 async function request(path, token, body, signal) {
   const response = await fetch("/api/instructor" + path, {
     method: body ? "POST" : "GET",
@@ -460,14 +461,23 @@ export default function InstructorDashboard({ token }) {
           courseId={selectedCourse.id}
           token={token}
         />
-      )}
-      {selectedCourse && (
-        <InstructorQuizzes
-          key={selectedCourse.id}
-          courseId={selectedCourse.id}
-          token={token}
-        />
-      )}
+        )}
+
+        {selectedCourse && (
+          <>
+            <InstructorQuizzes
+              key={"quizzes-" + selectedCourse.id}
+              courseId={selectedCourse.id}
+              token={token}
+            />
+
+            <InstructorAnalytics
+              key={"analytics-" + selectedCourse.id}
+              courseId={selectedCourse.id}
+              token={token}
+            />
+          </>
+        )}
     </section>
   );
 }
