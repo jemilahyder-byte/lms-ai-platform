@@ -859,6 +859,9 @@ require("./adminUsers")(app, pool, requireAuth, requireRole);
 require("./adminUserDeletion")(app, pool, requireAuth, requireRole);
 require("./discussionModeration")(app, pool, requireAuth, requireRole);
 require("./courseDiscussions")(app, pool, requireAuth);
+require("./discussionWriting")(app, pool, requireAuth);
+require("./announcements")(app, pool, requireAuth, requireRole);
+require("./notifications")(app, pool, requireAuth);
 const server = app.listen(port, "127.0.0.1", () => {
   console.log("LMS API running at http://127.0.0.1:" + port);
 });

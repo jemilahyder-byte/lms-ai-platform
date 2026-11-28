@@ -3,6 +3,8 @@ import InstructorAssignments from "./InstructorAssignments";
 import InstructorSubmissions from "./InstructorSubmissions";
 import InstructorQuizzes from "./InstructorQuizzes";
 import InstructorAnalytics from "./InstructorAnalytics";
+import CourseDiscussions from "./CourseDiscussions";
+import CourseAnnouncements from "./CourseAnnouncements";
 async function request(path, token, body, signal) {
   const response = await fetch("/api/instructor" + path, {
     method: body ? "POST" : "GET",
@@ -476,6 +478,17 @@ export default function InstructorDashboard({ token }) {
               courseId={selectedCourse.id}
               token={token}
             />
+            <CourseDiscussions
+  key={"discussions-" + selectedCourse.id + ":" + token}
+  courseId={selectedCourse.id}
+  token={token}
+/>
+<CourseAnnouncements
+  key={"announcements-" + selectedCourse.id + ":" + token}
+  courseId={selectedCourse.id}
+  token={token}
+  canPublish={true}
+/>
           </>
         )}
     </section>

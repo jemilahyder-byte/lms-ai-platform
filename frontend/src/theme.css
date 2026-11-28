@@ -1,0 +1,74 @@
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  background: #101827;
+  color: #e5e7eb;
+}
+
+.theme-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 20px;
+}
+
+.theme-toolbar button {
+  width: auto;
+  margin: 0;
+  padding: 10px 16px;
+}
+
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] #root {
+  background: #101827;
+  color: #e5e7eb;
+}
+
+:root[data-theme="dark"] :is(main, section, article, .card) {
+  background: #1e293b;
+  color: #e5e7eb;
+  border-color: #64748b;
+}
+
+:root[data-theme="dark"] :is(h1, h2, h3, h4, label) {
+  color: #e5e7eb;
+}
+
+:root[data-theme="dark"] :is(input, textarea, select) {
+  background: #0f172a;
+  color: #f1f5f9;
+  border: 1px solid #94a3b8;
+}
+
+:root[data-theme="dark"] a {
+  color: #93c5fd;
+}
+
+:root[data-theme="dark"] [role="alert"] {
+  color: #fda4af;
+}
+
+:root[data-theme="dark"] [role="status"] {
+  color: #86efac;
+}
+
+:root[data-theme="dark"] button {
+  background: #1d4ed8;
+  color: white;
+}
+
+:root[data-theme="dark"] button:disabled {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+:focus-visible {
+  outline: 3px solid #d97706;
+  outline-offset: 3px;
+}
+
+:root[data-theme="dark"] :focus-visible {
+  outline-color: #fbbf24;
+}

@@ -9,6 +9,8 @@ import StudentTutor from "./StudentTutor";
 import LessonStudy from "./LessonStudy";
 import StudentStudyPlan from "./StudentStudyPlan";
 import CourseDiscussions from "./CourseDiscussions";
+import CourseAnnouncements from "./CourseAnnouncements";
+import Notifications from "./Notifications";
 async function request(path, token, body, signal) {
   const response = await fetch("/api/student" + path, {
     method: body ? "POST" : "GET",
@@ -329,12 +331,21 @@ export function StudentLearning({ token }) {
   return (
     <section>
       <h3>Continue learning</h3>
+      <Notifications key={token} token={token} />
 
       {error && <p role="alert">{error}</p>}
       {!courses && !error && <p>Loading enrolled courses...</p>}
 
-      {courses && (
-        <>
+      {courseId && (
+  <CourseAnnouncements
+    key={"announcements-" + courseId + ":" + token}
+    courseId={courseId}
+    token={token}
+  />
+)}
+
+{courses && (
+  <>
           <label>
             Choose an enrolled course
             <select

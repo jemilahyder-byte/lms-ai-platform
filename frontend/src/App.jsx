@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import InstructorDashboard from "./InstructorDashboard";
 import AdminDashboard from "./AdminDashboard";
 import { StudentLearning } from "./StudentCoursePlayer";
+import useLanguage from "./useLanguage";
+
 const tokenKey = "lms-token";
 
 const selectStyle = {
@@ -9,6 +11,119 @@ const selectStyle = {
   padding: 10,
   margin: "8px 0",
 };
+
+const translations = {
+  en: {
+    appTitle: "LMS AI Platform",
+    login: "Log in",
+    logout: "Log out",
+    createAccount: "Create account",
+    createNewAccount: "Create a new account",
+    alreadyRegistered: "Already registered? Log in",
+    fullName: "Full name",
+    email: "Email",
+    password: "Password",
+    pleaseWait: "Please wait...",
+    register: "Register",
+    checkingSession: "Checking your session...",
+    accountCreated: "Account created. Please log in.",
+    loggedOut: "You have logged out.",
+    welcome: "Welcome",
+    roles: "Roles",
+    enrolledCourses: "My enrolled courses",
+    loadingEnrollments: "Loading your enrollments...",
+    noEnrollments: "You have not enrolled in any courses yet.",
+    catalog: "Course catalog",
+    searchCourses: "Search courses",
+    searchPlaceholder: "Search title or description",
+    category: "Category",
+    categoryPlaceholder: "All categories — or type Programming",
+    difficulty: "Difficulty",
+    allDifficulties: "All difficulties",
+    beginner: "Beginner",
+    intermediate: "Intermediate",
+    advanced: "Advanced",
+    minimumRating: "Minimum rating",
+    allRatings: "All ratings",
+    threeAbove: "3 and above",
+    fourAbove: "4 and above",
+    fourHalfAbove: "4.5 and above",
+    fiveOnly: "5 only",
+    loadingCourses: "Loading courses...",
+    noCourses: "No courses found. Try different filters.",
+    free: "Free",
+    price: "Price",
+    ratings: "ratings",
+    noRatings: "No ratings yet",
+    checkingEnrollment: "Checking enrollment...",
+    enrolled: "Enrolled",
+    enrolling: "Enrolling...",
+    paidUnavailable: "Paid enrollment unavailable",
+    enroll: "Enroll",
+    yourRating: "Your rating",
+    chooseRating: "Choose a rating",
+    saving: "Saving...",
+    saveRating: "Save rating",
+  },
+  ta: {
+    appTitle: "LMS AI கற்றல் தளம்",
+    login: "உள்நுழைய",
+    logout: "வெளியேறு",
+    createAccount: "கணக்கு உருவாக்கு",
+    createNewAccount: "புதிய கணக்கு உருவாக்கு",
+    alreadyRegistered: "ஏற்கெனவே கணக்கு உள்ளதா? உள்நுழைய",
+    fullName: "முழுப் பெயர்",
+    email: "மின்னஞ்சல்",
+    password: "கடவுச்சொல்",
+    pleaseWait: "காத்திருக்கவும்...",
+    register: "பதிவு செய்",
+    checkingSession: "உங்கள் உள்நுழைவு சரிபார்க்கப்படுகிறது...",
+    accountCreated: "கணக்கு உருவாக்கப்பட்டது. உள்நுழையுங்கள்.",
+    loggedOut: "நீங்கள் வெளியேறிவிட்டீர்கள்.",
+    welcome: "வரவேற்கிறோம்",
+    roles: "பங்குகள்",
+    enrolledCourses: "நான் சேர்ந்த பாடங்கள்",
+    loadingEnrollments: "நீங்கள் சேர்ந்த பாடங்கள் ஏற்றப்படுகின்றன...",
+    noEnrollments: "நீங்கள் இன்னும் எந்தப் பாடத்திலும் சேரவில்லை.",
+    catalog: "பாடப் பட்டியல்",
+    searchCourses: "பாடங்களைத் தேடுங்கள்",
+    searchPlaceholder: "தலைப்பு அல்லது விளக்கத்தைத் தேடுங்கள்",
+    category: "வகை",
+    categoryPlaceholder: "அனைத்து வகைகள் — அல்லது Programming என உள்ளிடவும்",
+    difficulty: "கடினத்தன்மை",
+    allDifficulties: "அனைத்து நிலைகள்",
+    beginner: "தொடக்க நிலை",
+    intermediate: "இடைநிலை",
+    advanced: "மேம்பட்ட நிலை",
+    minimumRating: "குறைந்தபட்ச மதிப்பீடு",
+    allRatings: "அனைத்து மதிப்பீடுகள்",
+    threeAbove: "3 மற்றும் அதற்கு மேல்",
+    fourAbove: "4 மற்றும் அதற்கு மேல்",
+    fourHalfAbove: "4.5 மற்றும் அதற்கு மேல்",
+    fiveOnly: "5 மட்டும்",
+    loadingCourses: "பாடங்கள் ஏற்றப்படுகின்றன...",
+    noCourses: "பாடங்கள் கிடைக்கவில்லை. வேறு வடிகட்டிகளை முயற்சிக்கவும்.",
+    free: "இலவசம்",
+    price: "விலை",
+    ratings: "மதிப்பீடுகள்",
+    noRatings: "இன்னும் மதிப்பீடுகள் இல்லை",
+    checkingEnrollment: "பாடச் சேர்க்கை சரிபார்க்கப்படுகிறது...",
+    enrolled: "சேர்ந்துவிட்டீர்கள்",
+    enrolling: "சேர்க்கப்படுகிறது...",
+    paidUnavailable: "கட்டணப் பாடச் சேர்க்கை தற்போது இல்லை",
+    enroll: "பாடத்தில் சேர்",
+    yourRating: "உங்கள் மதிப்பீடு",
+    chooseRating: "மதிப்பீட்டைத் தேர்ந்தெடுக்கவும்",
+    saving: "சேமிக்கப்படுகிறது...",
+    saveRating: "மதிப்பீட்டைச் சேமி",
+  },
+};
+
+function useAppText() {
+  const { language } = useLanguage();
+  const words = translations[language] || translations.en;
+  return (key) => words[key] ?? translations.en[key] ?? key;
+}
 
 async function apiRequest(path, { token, body, signal, method } = {}) {
   const response = await fetch("/api" + path, {
@@ -44,6 +159,7 @@ async function apiRequest(path, { token, body, signal, method } = {}) {
 }
 
 function CourseCatalog({ token, canEnroll }) {
+  const t = useAppText();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -134,15 +250,15 @@ function CourseCatalog({ token, canEnroll }) {
     setMessage("");
 
     try {
-      const data = await apiRequest(
-        "/courses/" + course.id + "/enroll",
-        { token, method: "POST" }
-      );
+      const data = await apiRequest("/courses/" + course.id + "/enroll", {
+        token,
+        method: "POST",
+      });
 
       setMyCourses((previous) =>
         previous.some((item) => item.id === course.id)
           ? previous
-          : [...previous, course]
+          : [...previous, course],
       );
 
       setMessage(course.title + ": " + data.message);
@@ -155,7 +271,6 @@ function CourseCatalog({ token, canEnroll }) {
 
   async function saveRating(event, course) {
     event.preventDefault();
-
     const fields = new FormData(event.currentTarget);
 
     setPendingId(course.id);
@@ -163,13 +278,10 @@ function CourseCatalog({ token, canEnroll }) {
     setMessage("");
 
     try {
-      const data = await apiRequest(
-        "/courses/" + course.id + "/rating",
-        {
-          token,
-          body: { rating: Number(fields.get("rating")) },
-        }
-      );
+      const data = await apiRequest("/courses/" + course.id + "/rating", {
+        token,
+        body: { rating: Number(fields.get("rating")) },
+      });
 
       setMessage(course.title + ": " + data.message);
       setRatingVersion((previous) => previous + 1);
@@ -184,12 +296,12 @@ function CourseCatalog({ token, canEnroll }) {
     <>
       {canEnroll && (
         <section>
-          <h3>My enrolled courses</h3>
+          <h3>{t("enrolledCourses")}</h3>
 
           {enrollmentLoading ? (
-            <p role="status">Loading your enrollments...</p>
+            <p role="status">{t("loadingEnrollments")}</p>
           ) : myCourses.length === 0 ? (
-            <p>You have not enrolled in any courses yet.</p>
+            <p>{t("noEnrollments")}</p>
           ) : (
             <ul>
               {myCourses.map((course) => (
@@ -204,94 +316,104 @@ function CourseCatalog({ token, canEnroll }) {
       )}
 
       <section>
-        <h3>Course catalog</h3>
+        <h3>{t("catalog")}</h3>
 
         <label>
-          Search courses
+          {t("searchCourses")}
           <input
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search title or description"
+            placeholder={t("searchPlaceholder")}
             maxLength={200}
           />
         </label>
 
         <label>
-          Category
+          {t("category")}
           <input
             value={category}
             onChange={(event) => setCategory(event.target.value)}
-            placeholder="All categories — or type Programming"
+            placeholder={t("categoryPlaceholder")}
             maxLength={100}
           />
         </label>
 
         <label>
-          Difficulty
+          {t("difficulty")}
           <select
             value={difficulty}
             onChange={(event) => setDifficulty(event.target.value)}
             style={selectStyle}
           >
-            <option value="">All difficulties</option>
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
+            <option value="">{t("allDifficulties")}</option>
+            <option value="beginner">{t("beginner")}</option>
+            <option value="intermediate">{t("intermediate")}</option>
+            <option value="advanced">{t("advanced")}</option>
           </select>
         </label>
 
         <label>
-          Minimum rating
+          {t("minimumRating")}
           <select
             value={minRating}
             onChange={(event) => setMinRating(event.target.value)}
             style={selectStyle}
           >
-            <option value="0">All ratings</option>
-            <option value="3">3 and above</option>
-            <option value="4">4 and above</option>
-            <option value="4.5">4.5 and above</option>
-            <option value="5">5 only</option>
+            <option value="0">{t("allRatings")}</option>
+            <option value="3">{t("threeAbove")}</option>
+            <option value="4">{t("fourAbove")}</option>
+            <option value="4.5">{t("fourHalfAbove")}</option>
+            <option value="5">{t("fiveOnly")}</option>
           </select>
         </label>
 
         {catalogError && <p role="alert">{catalogError}</p>}
 
         {loading ? (
-          <p role="status">Loading courses...</p>
+          <p role="status">{t("loadingCourses")}</p>
         ) : catalogError ? null : courses.length === 0 ? (
-          <p>No courses found. Try different filters.</p>
+          <p>{t("noCourses")}</p>
         ) : (
           courses.map((course) => {
             const isEnrolled = myCourses.some(
-              (item) => item.id === course.id
+              (item) => item.id === course.id,
             );
             const isFree = Number(course.price) === 0;
+            const difficultyLabel =
+              translations.en[course.difficulty]
+                ? t(course.difficulty)
+                : course.difficulty;
 
             return (
               <article
                 key={course.id}
                 style={{
-                  background: "white",
                   padding: 16,
                   borderRadius: 10,
                   marginTop: 16,
+                  border: "1px solid #94a3b8",
                 }}
               >
                 <h4>{course.title}</h4>
                 <p>{course.description}</p>
                 <p>
-                  {course.category} · {course.difficulty}
+                  {course.category} · {difficultyLabel}
                 </p>
-                <p>{isFree ? "Free" : "Price: " + course.price}</p>
+                <p>
+                  {isFree ? t("free") : t("price") + ": " + course.price}
+                </p>
 
-      <p>
-  {Number(course.rating_count) > 0
-    ? Number(course.average_rating).toFixed(1) +
-      " / 5 (" + course.rating_count + " ratings)"
-    : "No ratings yet"}
-</p>
+                <p>
+                  {Number(course.rating_count) > 0
+                    ? Number(course.average_rating).toFixed(1) +
+                      " / 5 (" +
+                      course.rating_count +
+                      " " +
+                      t("ratings") +
+                      ")"
+                    : t("noRatings")}
+                </p>
 
                 {canEnroll && (
                   <button
@@ -305,14 +427,14 @@ function CourseCatalog({ token, canEnroll }) {
                     }
                   >
                     {enrollmentLoading
-                      ? "Checking enrollment..."
+                      ? t("checkingEnrollment")
                       : isEnrolled
-                        ? "Enrolled"
+                        ? t("enrolled")
                         : pendingId === course.id
-                          ? "Enrolling..."
+                          ? t("enrolling")
                           : !isFree
-                            ? "Paid enrollment unavailable"
-                            : "Enroll"}
+                            ? t("paidUnavailable")
+                            : t("enroll")}
                   </button>
                 )}
 
@@ -322,7 +444,7 @@ function CourseCatalog({ token, canEnroll }) {
                     style={{ marginTop: 16 }}
                   >
                     <label>
-                      Your rating
+                      {t("yourRating")}
                       <select
                         name="rating"
                         defaultValue=""
@@ -331,7 +453,7 @@ function CourseCatalog({ token, canEnroll }) {
                         style={selectStyle}
                       >
                         <option value="" disabled>
-                          Choose a rating
+                          {t("chooseRating")}
                         </option>
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -341,13 +463,10 @@ function CourseCatalog({ token, canEnroll }) {
                       </select>
                     </label>
 
-                    <button
-                      type="submit"
-                      disabled={Boolean(pendingId)}
-                    >
+                    <button type="submit" disabled={Boolean(pendingId)}>
                       {pendingId === course.id
-                        ? "Saving..."
-                        : "Save rating"}
+                        ? t("saving")
+                        : t("saveRating")}
                     </button>
                   </form>
                 )}
@@ -361,6 +480,7 @@ function CourseCatalog({ token, canEnroll }) {
 }
 
 export default function App() {
+  const t = useAppText();
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(true);
   const [mode, setMode] = useState("login");
@@ -368,7 +488,7 @@ export default function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+  const [messageKey, setMessageKey] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -408,7 +528,7 @@ export default function App() {
 
     setBusy(true);
     setError("");
-    setMessage("");
+    setMessageKey("");
 
     try {
       if (mode === "register") {
@@ -418,7 +538,7 @@ export default function App() {
 
         setMode("login");
         setPassword("");
-        setMessage("Account created. Please log in.");
+        setMessageKey("accountCreated");
       } else {
         const login = await apiRequest("/auth/login", {
           body: { email, password },
@@ -431,7 +551,7 @@ export default function App() {
         sessionStorage.setItem(tokenKey, login.token);
         setUser(profile.user);
         setPassword("");
-        setMessage("");
+        setMessageKey("");
       }
     } catch (requestError) {
       setError(requestError.message);
@@ -444,7 +564,7 @@ export default function App() {
     setMode(mode === "login" ? "register" : "login");
     setPassword("");
     setError("");
-    setMessage("");
+    setMessageKey("");
   }
 
   function logout() {
@@ -453,38 +573,40 @@ export default function App() {
     setPassword("");
     setMode("login");
     setError("");
-    setMessage("You have logged out.");
+    setMessageKey("loggedOut");
   }
 
   if (checking) {
     return (
       <main className="auth-card">
-        Checking your session...
+        <p role="status">{t("checkingSession")}</p>
       </main>
     );
   }
 
   return (
     <main className="auth-card">
-      <h1>LMS AI Platform</h1>
+      <h1>{t("appTitle")}</h1>
 
       {user ? (
         <>
-          <h2>Welcome, {user.fullName}</h2>
+          <h2>
+            {t("welcome")}, {user.fullName}
+          </h2>
           <p>{user.email}</p>
           <p>
-            Roles — <strong>{user.roles.join(", ")}</strong>
+            {t("roles")} — <strong>{user.roles.join(", ")}</strong>
           </p>
 
-        {user.roles.includes("student") && (
-  <StudentLearning token={sessionStorage.getItem(tokenKey)} />
-)}
+          {user.roles.includes("student") && (
+            <StudentLearning token={sessionStorage.getItem(tokenKey)} />
+          )}
 
-<CourseCatalog
-  key={user.id || user.email}
-  token={sessionStorage.getItem(tokenKey)}
-  canEnroll={user.roles.includes("student")}
-/>
+          <CourseCatalog
+            key={user.id || user.email}
+            token={sessionStorage.getItem(tokenKey)}
+            canEnroll={user.roles.includes("student")}
+          />
 
           {user.roles.includes("instructor") && (
             <InstructorDashboard
@@ -501,26 +623,24 @@ export default function App() {
           )}
 
           <button type="button" onClick={logout}>
-            Log out
+            {t("logout")}
           </button>
         </>
       ) : (
         <>
           <h2>
-            {mode === "login" ? "Log in" : "Create account"}
+            {mode === "login" ? t("login") : t("createAccount")}
           </h2>
 
           <form onSubmit={handleSubmit}>
             {mode === "register" && (
               <label>
-                Full name
+                {t("fullName")}
                 <input
                   name="fullName"
                   autoComplete="name"
                   value={fullName}
-                  onChange={(event) =>
-                    setFullName(event.target.value)
-                  }
+                  onChange={(event) => setFullName(event.target.value)}
                   maxLength={200}
                   required
                   disabled={busy}
@@ -529,7 +649,7 @@ export default function App() {
             )}
 
             <label>
-              Email
+              {t("email")}
               <input
                 name="email"
                 type="email"
@@ -543,19 +663,15 @@ export default function App() {
             </label>
 
             <label>
-              Password
+              {t("password")}
               <input
                 name="password"
                 type="password"
                 autoComplete={
-                  mode === "login"
-                    ? "current-password"
-                    : "new-password"
+                  mode === "login" ? "current-password" : "new-password"
                 }
                 value={password}
-                onChange={(event) =>
-                  setPassword(event.target.value)
-                }
+                onChange={(event) => setPassword(event.target.value)}
                 minLength={mode === "register" ? 8 : 1}
                 required
                 disabled={busy}
@@ -563,25 +679,21 @@ export default function App() {
             </label>
 
             {error && <p role="alert">{error}</p>}
-            {message && <p role="status">{message}</p>}
+            {messageKey && <p role="status">{t(messageKey)}</p>}
 
             <button type="submit" disabled={busy}>
               {busy
-                ? "Please wait..."
+                ? t("pleaseWait")
                 : mode === "login"
-                  ? "Log in"
-                  : "Register"}
+                  ? t("login")
+                  : t("register")}
             </button>
           </form>
 
-          <button
-            type="button"
-            onClick={changeMode}
-            disabled={busy}
-          >
+          <button type="button" onClick={changeMode} disabled={busy}>
             {mode === "login"
-              ? "Create a new account"
-              : "Already registered? Log in"}
+              ? t("createNewAccount")
+              : t("alreadyRegistered")}
           </button>
         </>
       )}

@@ -12,13 +12,11 @@ async function request(token, path, body) {
   });
 
   const contentType = response.headers.get("content-type") || "";
-
   if (!contentType.includes("application/json")) {
-    throw new Error("API unavailable. Check the backend.");
+    throw new Error("Unexpected server response. Check the backend.");
   }
 
   const result = await response.json();
-
   if (!response.ok) {
     throw new Error(result.message || "Request failed.");
   }
@@ -29,83 +27,167 @@ async function request(token, path, body) {
 export default function CourseDiscussions({ courseId, token }) {
   const [posts, setPosts] = useState([]);
   const [loaded, setLoaded] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [reportingId, setReportingId] = useState("");
-  const [reason, setReason] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [action, setAction] = useState(null);
+  const [text, setText] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const busy = loading || saving;
+  async function refreshPosts() {
+    const result = await request(
+      token,
+      "/api/courses/" + courseId + "/discussion-posts"
+    );
+    setPosts(result.posts);
+    setLoaded(true);
+  }
+
+  function showError(err) {
+    setError(
+      err.name === "TimeoutError"
+        ? "Request timed out. Reload posts before trying again."
+        : err.message || "Request failed."
+    );
+  }
 
   async function loadPosts() {
     if (busy || !courseId) return;
-
-    setLoading(true);
+    setBusy(true);
     setError("");
     setMessage("");
-
     try {
-      const result = await request(
-        token,
-        "/api/courses/" + courseId + "/discussion-posts"
-      );
-
-      setPosts(result.posts);
-      setLoaded(true);
-      setReportingId("");
-      setReason("");
+      await refreshPosts();
     } catch (err) {
-      setError(err.message || "Could not load posts.");
+      showError(err);
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   }
 
-  async function submitReport(event) {
+  async function createDiscussion(event) {
     event.preventDefault();
+    if (busy || !title.trim() || !body.trim()) return;
 
-    if (busy || !reportingId || !reason.trim()) return;
-
-    setSaving(true);
+    setBusy(true);
     setError("");
     setMessage("");
 
     try {
-      const result = await request(
+      await request(
         token,
-        "/api/discussions/posts/" + reportingId + "/report",
-        { reason: reason.trim() }
+        "/api/courses/" + courseId + "/discussions",
+        { title: title.trim(), body: body.trim() }
       );
-
-      setPosts((current) =>
-        current.map((post) =>
-          post.id === reportingId
-            ? { ...post, already_reported: true }
-            : post
-        )
-      );
-
-      setReportingId("");
-      setReason("");
-      setMessage(result.message || "Report submitted.");
+      setTitle("");
+      setBody("");
+      setMessage("Discussion created.");
+      await refreshPosts();
     } catch (err) {
-      setError(err.message || "Could not submit report.");
+      showError(err);
     } finally {
-      setSaving(false);
+      setBusy(false);
+    }
+  }
+
+  function openAction(type, post) {
+    setAction({
+      type,
+      postId: post.id,
+      threadId: post.thread_id,
+    });
+    setText("");
+    setError("");
+    setMessage("");
+  }
+
+  async function submitAction(event) {
+    event.preventDefault();
+    if (busy || !action || !text.trim()) return;
+
+    setBusy(true);
+    setError("");
+    setMessage("");
+
+    try {
+      if (action.type === "report") {
+        await request(
+          token,
+          "/api/discussions/posts/" + action.postId + "/report",
+          { reason: text.trim() }
+        );
+        setPosts((current) =>
+          current.map((post) =>
+            post.id === action.postId
+              ? { ...post, already_reported: true }
+              : post
+          )
+        );
+        setMessage("Report submitted for admin review.");
+        setAction(null);
+        setText("");
+      } else {
+        await request(
+          token,
+          "/api/discussions/threads/" + action.threadId + "/replies",
+          { body: text.trim() }
+        );
+        setMessage("Reply posted.");
+        setAction(null);
+        setText("");
+        await refreshPosts();
+      }
+    } catch (err) {
+      showError(err);
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
     <section>
-      <h3>Course discussion posts</h3>
+      <h3>Course discussions</h3>
+
+      <h4>Start a discussion</h4>
+      <form onSubmit={createDiscussion}>
+        <label>
+          Title
+          <input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            maxLength={200}
+            required
+            disabled={busy}
+          />
+        </label>
+
+        <label>
+          Message
+          <textarea
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
+            maxLength={10000}
+            rows={4}
+            required
+            disabled={busy}
+          />
+        </label>
+
+        <button
+          type="submit"
+          disabled={busy || !courseId || !title.trim() || !body.trim()}
+        >
+          Create discussion
+        </button>
+      </form>
 
       <button
         type="button"
         onClick={loadPosts}
         disabled={busy || !courseId}
       >
-        {loading ? "Loading..." : "Load discussion posts"}
+        {busy ? "Please wait..." : "Load discussion posts"}
       </button>
 
       {error && <p role="alert">{error}</p>}
@@ -125,53 +207,55 @@ export default function CourseDiscussions({ courseId, token }) {
           <p>Author: {post.author_name}</p>
           <p style={{ whiteSpace: "pre-wrap" }}>{post.body}</p>
 
+          <button
+            type="button"
+            disabled={busy || !post.thread_id}
+            onClick={() => openAction("reply", post)}
+          >
+            Reply to discussion
+          </button>
+
           {post.already_reported ? (
             <p>You have already reported this post.</p>
-          ) : reportingId === post.id ? (
-            <form onSubmit={submitReport}>
+          ) : (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => openAction("report", post)}
+            >
+              Report post
+            </button>
+          )}
+
+          {action?.postId === post.id && (
+            <form onSubmit={submitAction}>
               <label>
-                Reason for reporting
+                {action.type === "report" ? "Report reason" : "Your reply"}
                 <textarea
-                  value={reason}
-                  onChange={(event) => setReason(event.target.value)}
-                  required
-                  maxLength={1000}
-                  disabled={busy}
+                  value={text}
+                  onChange={(event) => setText(event.target.value)}
+                  maxLength={action.type === "report" ? 1000 : 10000}
                   rows={3}
+                  required
+                  disabled={busy}
                 />
               </label>
 
-              <button
-                type="submit"
-                disabled={busy || !reason.trim()}
-              >
-                {saving ? "Submitting..." : "Submit report"}
+              <button type="submit" disabled={busy || !text.trim()}>
+                {action.type === "report" ? "Submit report" : "Post reply"}
               </button>
 
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => {
-                  setReportingId("");
-                  setReason("");
+                  setAction(null);
+                  setText("");
                 }}
               >
                 Cancel
               </button>
             </form>
-          ) : (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                setReportingId(post.id);
-                setReason("");
-                setError("");
-                setMessage("");
-              }}
-            >
-              Report post
-            </button>
           )}
         </article>
       ))}

@@ -41,7 +41,7 @@ module.exports = function (app, pool, requireAuth) {
         }
 
         const posts = await pool.query(
-          `SELECT p.id, p.body, p.created_at,
+          `SELECT p.id, p.thread_id, p.body, p.created_at,
              t.title AS thread_title,
              u.full_name AS author_name,
              EXISTS (
